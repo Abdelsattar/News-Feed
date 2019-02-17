@@ -8,4 +8,6 @@
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="text_horizontal_margin">8dp</dimen>
     <dimen name="text_vertical_margin">12dp</dimen>
+    <dimen name="title_size">18sp</dimen>
+    <dimen name="card_elvation">4dp</dimen>
 </resources>
