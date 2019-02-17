@@ -1,5 +1,7 @@
-package com.sattar.newsfeed;
+package com.sattar.newsfeed.views;
 
+import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -10,15 +12,25 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.sattar.newsfeed.R;
+import com.sattar.newsfeed.ViewModels.MainActivityViewModel;
 import com.sattar.newsfeed.models.Movie;
+import com.sattar.newsfeed.models.news.NewsResponse;
 import com.sattar.newsfeed.views.adapters.NewsFeedAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -28,6 +40,8 @@ public class MainActivity extends AppCompatActivity
     private NewsFeedAdapter mAdapter;
     private List<Movie> movieList;
 
+    MainActivityViewModel mViewModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,6 +50,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     void initScreen() {
+
+        mViewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
         rvNews = findViewById(R.id.rvNews);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -49,6 +65,63 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         setupNewsRecyclerView();
+
+        mViewModel.getNews("the-next-web")
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(io.reactivex.schedulers.Schedulers.io())
+                .subscribe(new Observer<NewsResponse>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                        Log.e("OnSub", "Subcribed");
+                    }
+
+                    @Override
+                    public void onNext(NewsResponse newsResponse) {
+                        Log.e("onNext the next", new Gson().toJson(newsResponse));
+                        Log.e("onNext the next", newsResponse.getArticles().size() + "");
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e("onError", e.getLocalizedMessage());
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+        mViewModel.getNews("associated-press")
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(io.reactivex.schedulers.Schedulers.io())
+                .subscribe(new Observer<NewsResponse>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                        Log.e("OnSub", "Subcribed");
+                    }
+
+                    @Override
+                    public void onNext(NewsResponse newsResponse) {
+                        Log.e("onNext the next", new Gson().toJson(newsResponse));
+                        Log.e("onNext the next", newsResponse.getArticles().size() + "");
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e("onError", e.getLocalizedMessage());
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+
+
     }
 
     @Override
@@ -82,7 +155,6 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -109,17 +181,23 @@ public class MainActivity extends AppCompatActivity
     }
 
     void setupNewsRecyclerView() {
-        prepareMovieData();
-
+        movieList = new ArrayList<>();
         mAdapter = new NewsFeedAdapter(movieList);
+        mAdapter.setOnclickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this, NewsDetailsActivity.class));
+            }
+        });
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         rvNews.setLayoutManager(mLayoutManager);
         rvNews.setItemAnimator(new DefaultItemAnimator());
         rvNews.setAdapter(mAdapter);
+        prepareMovieData();
+
     }
 
     private void prepareMovieData() {
-        movieList = new ArrayList<>();
         Movie movie = new Movie("Mad Max: Fury Road", "Action & Adventure", "2015");
         movieList.add(movie);
 
@@ -167,6 +245,6 @@ public class MainActivity extends AppCompatActivity
 
         movie = new Movie("Guardians of the Galaxy", "Science Fiction & Fantasy", "2014");
         movieList.add(movie);
-
+        mAdapter.notifyDataSetChanged();
     }
 }

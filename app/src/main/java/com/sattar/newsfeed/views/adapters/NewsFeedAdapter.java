@@ -15,44 +15,50 @@ import java.util.List;
 /**
  * Created By Sattar 2/17/2019
  */
-public class NewsFeedAdapter extends RecyclerView.Adapter<NewsFeedAdapter.MyViewHolder> {
+public class NewsFeedAdapter extends RecyclerView.Adapter<NewsFeedAdapter.NewsViewHolder> {
 
     private List<Movie> moviesList;
-
-    class MyViewHolder extends RecyclerView.ViewHolder {
-        ImageView imgArticle;
-        public TextView txtTitle, txtSource, txtDate;
-
-        MyViewHolder(View view) {
-            super(view);
-            imgArticle = view.findViewById(R.id.imgArticle);
-            txtTitle = view.findViewById(R.id.txtTitle);
-            txtSource = view.findViewById(R.id.txtSource);
-            txtDate = view.findViewById(R.id.txtDate);
-        }
-    }
-
+    private View.OnClickListener mOnclickListener;
 
     public NewsFeedAdapter(List<Movie> moviesList) {
         this.moviesList = moviesList;
     }
 
     @Override
-    public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public NewsViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.list_item_news, parent, false);
 
-        return new MyViewHolder(itemView);
+        return new NewsViewHolder(itemView);
+    }
+
+   public void setOnclickListener(View.OnClickListener onclickListener) {
+        mOnclickListener = onclickListener;
     }
 
     @Override
-    public void onBindViewHolder(MyViewHolder holder, int position) {
+    public void onBindViewHolder(NewsViewHolder holder, int position) {
         Movie movie = moviesList.get(position);
+
+        holder.itemView.setOnClickListener(mOnclickListener);
     }
 
     @Override
     public int getItemCount() {
-//        Log.e("moviesList size", moviesList.size() + "");
         return moviesList != null ? moviesList.size() : 0;
+    }
+
+
+    class NewsViewHolder extends RecyclerView.ViewHolder {
+        ImageView imgArticle;
+        public TextView txtTitle, txtSource, txtDate;
+
+        NewsViewHolder(View view) {
+            super(view);
+            imgArticle = view.findViewById(R.id.imgArticle);
+            txtTitle = view.findViewById(R.id.txtTitle);
+            txtSource = view.findViewById(R.id.txtSource);
+            txtDate = view.findViewById(R.id.txtDate);
+        }
     }
 }
