@@ -1,84 +1,124 @@
 package com.sattar.newsfeed.models.news;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.SerializedName;
-public class ArticlesItem {
 
-	@SerializedName("publishedAt")
-	private String publishedAt;
+public class ArticlesItem implements Parcelable {
 
-	@SerializedName("author")
-	private String author;
+    @SerializedName("publishedAt")
+    private String publishedAt;
 
-	@SerializedName("urlToImage")
-	private String urlToImage;
+    @SerializedName("author")
+    private String author;
 
-	@SerializedName("description")
-	private String description;
+    @SerializedName("urlToImage")
+    private String urlToImage;
 
-	@SerializedName("title")
-	private String title;
+    @SerializedName("description")
+    private String description;
 
-	@SerializedName("url")
-	private String url;
+    @SerializedName("title")
+    private String title;
 
-	public void setPublishedAt(String publishedAt){
-		this.publishedAt = publishedAt;
-	}
+    @SerializedName("url")
+    private String url;
 
-	public String getPublishedAt(){
-		return publishedAt;
-	}
+    protected ArticlesItem(Parcel in) {
+        publishedAt = in.readString();
+        author = in.readString();
+        urlToImage = in.readString();
+        description = in.readString();
+        title = in.readString();
+        url = in.readString();
+    }
 
-	public void setAuthor(String author){
-		this.author = author;
-	}
+    public static final Creator<ArticlesItem> CREATOR = new Creator<ArticlesItem>() {
+        @Override
+        public ArticlesItem createFromParcel(Parcel in) {
+            return new ArticlesItem(in);
+        }
 
-	public String getAuthor(){
-		return author;
-	}
+        @Override
+        public ArticlesItem[] newArray(int size) {
+            return new ArticlesItem[size];
+        }
+    };
 
-	public void setUrlToImage(String urlToImage){
-		this.urlToImage = urlToImage;
-	}
+    public void setPublishedAt(String publishedAt) {
+        this.publishedAt = publishedAt;
+    }
 
-	public String getUrlToImage(){
-		return urlToImage;
-	}
+    public String getPublishedAt() {
+        return publishedAt;
+    }
 
-	public void setDescription(String description){
-		this.description = description;
-	}
+    public void setAuthor(String author) {
+        this.author = author;
+    }
 
-	public String getDescription(){
-		return description;
-	}
+    public String getAuthor() {
+        return author;
+    }
 
-	public void setTitle(String title){
-		this.title = title;
-	}
+    public void setUrlToImage(String urlToImage) {
+        this.urlToImage = urlToImage;
+    }
 
-	public String getTitle(){
-		return title;
-	}
+    public String getUrlToImage() {
+        return urlToImage;
+    }
 
-	public void setUrl(String url){
-		this.url = url;
-	}
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-	public String getUrl(){
-		return url;
-	}
+    public String getDescription() {
+        return description;
+    }
 
-	@Override
- 	public String toString(){
-		return 
-			"ArticlesItem{" + 
-			"publishedAt = '" + publishedAt + '\'' + 
-			",author = '" + author + '\'' + 
-			",urlToImage = '" + urlToImage + '\'' + 
-			",description = '" + description + '\'' + 
-			",title = '" + title + '\'' + 
-			",url = '" + url + '\'' + 
-			"}";
-		}
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    @Override
+    public String toString() {
+        return
+                "ArticlesItem{" +
+                        "publishedAt = '" + publishedAt + '\'' +
+                        ",author = '" + author + '\'' +
+                        ",urlToImage = '" + urlToImage + '\'' +
+                        ",description = '" + description + '\'' +
+                        ",title = '" + title + '\'' +
+                        ",url = '" + url + '\'' +
+                        "}";
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(publishedAt);
+        parcel.writeString(author);
+        parcel.writeString(urlToImage);
+        parcel.writeString(description);
+        parcel.writeString(title);
+        parcel.writeString(url);
+    }
 }

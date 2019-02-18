@@ -19,11 +19,16 @@ import java.util.List;
  */
 public class NewsFeedAdapter extends RecyclerView.Adapter<NewsFeedAdapter.NewsViewHolder> {
 
-    private List<ArticlesItem> newsList;
+    private List<ArticlesItem> articlesItemList;
     private View.OnClickListener mOnclickListener;
+    OnItemClickListener mOnItemClickListener;
 
-    public NewsFeedAdapter(List<ArticlesItem> newsList) {
-        this.newsList = newsList;
+    public interface OnItemClickListener {
+        void onItemClicked(int pos);
+    }
+
+    public NewsFeedAdapter(List<ArticlesItem> articlesItemList) {
+        this.articlesItemList = articlesItemList;
     }
 
     @Override
@@ -34,18 +39,18 @@ public class NewsFeedAdapter extends RecyclerView.Adapter<NewsFeedAdapter.NewsVi
         return new NewsViewHolder(itemView);
     }
 
-    public void setOnclickListener(View.OnClickListener onclickListener) {
-        mOnclickListener = onclickListener;
+    public void setOnclickListener(OnItemClickListener onItemClickListener) {
+        mOnItemClickListener = onItemClickListener;
     }
 
-    public void addData(List<ArticlesItem> newList) {
-        newsList.addAll(newList);
+    public void updateData(List<ArticlesItem> newList) {
+        articlesItemList = newList;
         notifyDataSetChanged();
     }
 
     @Override
     public void onBindViewHolder(NewsViewHolder holder, int position) {
-        ArticlesItem article = newsList.get(position);
+        ArticlesItem article = articlesItemList.get(position);
 
         holder.txtDate.setText(Utilities.getDateTime(article.getPublishedAt()));
         holder.txtTitle.setText(article.getTitle());
@@ -54,23 +59,20 @@ public class NewsFeedAdapter extends RecyclerView.Adapter<NewsFeedAdapter.NewsVi
         try {
             Picasso.get()
                     .load(article.getUrlToImage())
-                    .placeholder(R.drawable.ic_launcher_foreground)
-                    .error(R.drawable.ic_launcher_foreground)
+                    .placeholder(R.drawable.placeholder)
+                    .error(R.drawable.placeholder)
                     .into(holder.imgArticle);
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
             Picasso.get()
-                    .load(R.drawable.ic_launcher_foreground)
+                    .load(R.drawable.placeholder)
                     .into(holder.imgArticle);
         }
-
-
-        holder.itemView.setOnClickListener(mOnclickListener);
     }
 
     @Override
     public int getItemCount() {
-        return newsList != null ? newsList.size() : 0;
+        return articlesItemList != null ? articlesItemList.size() : 0;
     }
 
 
@@ -84,6 +86,13 @@ public class NewsFeedAdapter extends RecyclerView.Adapter<NewsFeedAdapter.NewsVi
             txtTitle = view.findViewById(R.id.txtTitle);
             txtSource = view.findViewById(R.id.txtSource);
             txtDate = view.findViewById(R.id.txtDate);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mOnItemClickListener.onItemClicked(getAdapterPosition());
+                }
+            });
         }
     }
 }

@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -16,6 +17,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.sattar.newsfeed.R;
@@ -30,15 +33,22 @@ import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 
+import static com.sattar.newsfeed.helpers.Constants.KEY_ARTICLE;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private DrawerLayout drawer;
     private RecyclerView rvNews;
     private NewsFeedAdapter mAdapter;
-    private List<ArticlesItem> articlesItemList;
+    private List<ArticlesItem> mArticlesItemList;
 
     MainActivityViewModel mViewModel;
+
+    TextView txtError;
+    ProgressBar progressBar;
+    private Disposable disposable;
+    private SwipeRefreshLayout pullToRefresh;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,9 +58,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     void initScreen() {
-
         mViewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
         rvNews = findViewById(R.id.rvNews);
+        txtError = findViewById(R.id.txtError);
+        progressBar = findViewById(R.id.progressBar);
+        pullToRefresh = findViewById(R.id.pullToRefresh);
+
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         drawer = findViewById(R.id.drawer_layout);
@@ -61,91 +75,52 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
         setupNewsRecyclerView();
-
-//        mViewModel.getNews("the-next-web")
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribeOn(io.reactivex.schedulers.Schedulers.io())
-//                .subscribe(new Observer<NewsResponse>() {
-//                    @Override
-//                    public void onSubscribe(Disposable d) {
-//
-//                        Log.e("OnSub", "Subcribed");
-//                    }
-//
-//                    @Override
-//                    public void onNext(NewsResponse newsResponse) {
-//                        Log.e("onNext the next", new Gson().toJson(newsResponse));
-//                        Log.e("onNext the next", newsResponse.getArticles().size() + "");
-//                        if (mAdapter != null) {
-//                            mAdapter.addData(newsResponse.getArticles());
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onError(Throwable e) {
-//                        Log.e("onError", e.getLocalizedMessage());
-//                    }
-//
-//                    @Override
-//                    public void onComplete() {
-//
-//                    }
-//                });
-//        mViewModel.getNews("associated-press")
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribeOn(io.reactivex.schedulers.Schedulers.io())
-//                .subscribe(new Observer<NewsResponse>() {
-//                    @Override
-//                    public void onSubscribe(Disposable d) {
-//
-//                        Log.e("OnSub", "Subcribed");
-//                    }
-//
-//                    @Override
-//                    public void onNext(NewsResponse newsResponse) {
-//                        Log.e("onNext the next", new Gson().toJson(newsResponse));
-//                        Log.e("onNext the next", newsResponse.getArticles().size() + "");
-//
-//                        if (mAdapter != null) {
-//                            mAdapter.addData(newsResponse.getArticles());
-//                        }
-//
-//                    }
-//
-//                    @Override
-//                    public void onError(Throwable e) {
-//                        Log.e("onError", e.getLocalizedMessage());
-//                    }
-//
-//                    @Override
-//                    public void onComplete() {
-//
-//                    }
-//                });
-
         getAllNews();
+        pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getAllNews();
+                pullToRefresh.setRefreshing(false);
+            }
+        });
     }
 
     void getAllNews() {
-        mViewModel.getAllNews().observeOn(AndroidSchedulers.mainThread())
+//        progressBar.setVisibility(View.VISIBLE);
+
+        mViewModel.getAllNews()
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(io.reactivex.schedulers.Schedulers.io())
                 .subscribe(new Observer<List<ArticlesItem>>() {
                     @Override
                     public void onSubscribe(Disposable d) {
                         Log.e("On Next", "on subscribe");
+                        disposable = d;
                     }
 
                     @Override
                     public void onNext(List<ArticlesItem> articlesItems) {
                         Log.e("On Next", articlesItems.size() + "");
-                        mAdapter.addData(articlesItems);
+                        progressBar.setVisibility(View.GONE);
+                        mArticlesItemList = articlesItems;
+
+                        if (!articlesItems.isEmpty()) {
+                            mAdapter.updateData(articlesItems);
+                            rvNews.setVisibility(View.VISIBLE);
+                            txtError.setVisibility(View.GONE);
+
+                        } else {
+                            txtError.setText(getString(R.string.txt_no_articles));
+                            txtError.setVisibility(View.VISIBLE);
+                        }
                     }
 
                     @Override
                     public void onError(Throwable e) {
                         Log.e("onError", e.getLocalizedMessage());
+                        progressBar.setVisibility(View.GONE);
+                        txtError.setVisibility(View.VISIBLE);
 
                     }
 
@@ -174,13 +149,11 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_search) {
+            Toast.makeText(this, getString(R.string.action_search), Toast.LENGTH_SHORT).show();
+
             return true;
         }
 
@@ -193,32 +166,35 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
-        }
-        Toast.makeText(this, item.getTitle(), Toast.LENGTH_SHORT).show();
+//        if (id == R.id.nav_camera) {
+//            // Handle the camera action
+//        } else if (id == R.id.nav_gallery) {
+//
+//        } else if (id == R.id.nav_slideshow) {
+//
+//        } else if (id == R.id.nav_manage) {
+//
+//        } else if (id == R.id.nav_share) {
+//
+//        } else if (id == R.id.nav_send) {
+//
+//        }
+        if (item.getTitle() != null)
+            Toast.makeText(this, item.getTitle(), Toast.LENGTH_SHORT).show();
 
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
     void setupNewsRecyclerView() {
-        articlesItemList = new ArrayList<>();
-        mAdapter = new NewsFeedAdapter(articlesItemList);
-        mAdapter.setOnclickListener(new View.OnClickListener() {
+        mArticlesItemList = new ArrayList<>();
+        mAdapter = new NewsFeedAdapter(mArticlesItemList);
+        mAdapter.setOnclickListener(new NewsFeedAdapter.OnItemClickListener() {
             @Override
-            public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, NewsDetailsActivity.class));
+            public void onItemClicked(int pos) {
+
+                startActivity(new Intent(MainActivity.this, NewsDetailsActivity.class)
+                        .putExtra(KEY_ARTICLE, mArticlesItemList.get(pos)));
             }
         });
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
@@ -227,4 +203,9 @@ public class MainActivity extends AppCompatActivity
         rvNews.setAdapter(mAdapter);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        disposable.dispose();
+    }
 }
