@@ -8,7 +8,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.sattar.newsfeed.R;
-import com.sattar.newsfeed.models.Movie;
+import com.sattar.newsfeed.helpers.Utilities;
+import com.sattar.newsfeed.models.news.ArticlesItem;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -17,11 +19,11 @@ import java.util.List;
  */
 public class NewsFeedAdapter extends RecyclerView.Adapter<NewsFeedAdapter.NewsViewHolder> {
 
-    private List<Movie> moviesList;
+    private List<ArticlesItem> newsList;
     private View.OnClickListener mOnclickListener;
 
-    public NewsFeedAdapter(List<Movie> moviesList) {
-        this.moviesList = moviesList;
+    public NewsFeedAdapter(List<ArticlesItem> newsList) {
+        this.newsList = newsList;
     }
 
     @Override
@@ -32,20 +34,35 @@ public class NewsFeedAdapter extends RecyclerView.Adapter<NewsFeedAdapter.NewsVi
         return new NewsViewHolder(itemView);
     }
 
-   public void setOnclickListener(View.OnClickListener onclickListener) {
+    public void setOnclickListener(View.OnClickListener onclickListener) {
         mOnclickListener = onclickListener;
+    }
+
+    public void addData(List<ArticlesItem> newList) {
+        newsList.addAll(newList);
+        notifyDataSetChanged();
     }
 
     @Override
     public void onBindViewHolder(NewsViewHolder holder, int position) {
-        Movie movie = moviesList.get(position);
+        ArticlesItem article = newsList.get(position);
+
+        holder.txtDate.setText(Utilities.getDateTime(article.getPublishedAt()));
+        holder.txtTitle.setText(article.getTitle());
+        holder.txtSource.setText(article.getAuthor());
+
+        Picasso.get()
+                .load(article.getUrlToImage())
+                .placeholder(R.drawable.ic_launcher_foreground)
+                .error(R.drawable.ic_launcher_foreground)
+                .into(holder.imgArticle);
 
         holder.itemView.setOnClickListener(mOnclickListener);
     }
 
     @Override
     public int getItemCount() {
-        return moviesList != null ? moviesList.size() : 0;
+        return newsList != null ? newsList.size() : 0;
     }
 
 
