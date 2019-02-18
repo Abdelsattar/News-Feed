@@ -51,11 +51,19 @@ public class NewsFeedAdapter extends RecyclerView.Adapter<NewsFeedAdapter.NewsVi
         holder.txtTitle.setText(article.getTitle());
         holder.txtSource.setText(article.getAuthor());
 
-        Picasso.get()
-                .load(article.getUrlToImage())
-                .placeholder(R.drawable.ic_launcher_foreground)
-                .error(R.drawable.ic_launcher_foreground)
-                .into(holder.imgArticle);
+        try {
+            Picasso.get()
+                    .load(article.getUrlToImage())
+                    .placeholder(R.drawable.ic_launcher_foreground)
+                    .error(R.drawable.ic_launcher_foreground)
+                    .into(holder.imgArticle);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            Picasso.get()
+                    .load(R.drawable.ic_launcher_foreground)
+                    .into(holder.imgArticle);
+        }
+
 
         holder.itemView.setOnClickListener(mOnclickListener);
     }

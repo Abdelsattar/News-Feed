@@ -18,11 +18,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
 import com.sattar.newsfeed.R;
 import com.sattar.newsfeed.ViewModels.MainActivityViewModel;
 import com.sattar.newsfeed.models.news.ArticlesItem;
-import com.sattar.newsfeed.models.news.NewsResponse;
 import com.sattar.newsfeed.views.adapters.NewsFeedAdapter;
 
 import java.util.ArrayList;
@@ -66,28 +64,89 @@ public class MainActivity extends AppCompatActivity
 
         setupNewsRecyclerView();
 
-        mViewModel.getNews("the-next-web")
-                .observeOn(AndroidSchedulers.mainThread())
+//        mViewModel.getNews("the-next-web")
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribeOn(io.reactivex.schedulers.Schedulers.io())
+//                .subscribe(new Observer<NewsResponse>() {
+//                    @Override
+//                    public void onSubscribe(Disposable d) {
+//
+//                        Log.e("OnSub", "Subcribed");
+//                    }
+//
+//                    @Override
+//                    public void onNext(NewsResponse newsResponse) {
+//                        Log.e("onNext the next", new Gson().toJson(newsResponse));
+//                        Log.e("onNext the next", newsResponse.getArticles().size() + "");
+//                        if (mAdapter != null) {
+//                            mAdapter.addData(newsResponse.getArticles());
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onError(Throwable e) {
+//                        Log.e("onError", e.getLocalizedMessage());
+//                    }
+//
+//                    @Override
+//                    public void onComplete() {
+//
+//                    }
+//                });
+//        mViewModel.getNews("associated-press")
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribeOn(io.reactivex.schedulers.Schedulers.io())
+//                .subscribe(new Observer<NewsResponse>() {
+//                    @Override
+//                    public void onSubscribe(Disposable d) {
+//
+//                        Log.e("OnSub", "Subcribed");
+//                    }
+//
+//                    @Override
+//                    public void onNext(NewsResponse newsResponse) {
+//                        Log.e("onNext the next", new Gson().toJson(newsResponse));
+//                        Log.e("onNext the next", newsResponse.getArticles().size() + "");
+//
+//                        if (mAdapter != null) {
+//                            mAdapter.addData(newsResponse.getArticles());
+//                        }
+//
+//                    }
+//
+//                    @Override
+//                    public void onError(Throwable e) {
+//                        Log.e("onError", e.getLocalizedMessage());
+//                    }
+//
+//                    @Override
+//                    public void onComplete() {
+//
+//                    }
+//                });
+
+        getAllNews();
+    }
+
+    void getAllNews() {
+        mViewModel.getAllNews().observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(io.reactivex.schedulers.Schedulers.io())
-                .subscribe(new Observer<NewsResponse>() {
+                .subscribe(new Observer<List<ArticlesItem>>() {
                     @Override
                     public void onSubscribe(Disposable d) {
-
-                        Log.e("OnSub", "Subcribed");
+                        Log.e("On Next", "on subscribe");
                     }
 
                     @Override
-                    public void onNext(NewsResponse newsResponse) {
-                        Log.e("onNext the next", new Gson().toJson(newsResponse));
-                        Log.e("onNext the next", newsResponse.getArticles().size() + "");
-                        if (mAdapter != null) {
-                            mAdapter.addData(newsResponse.getArticles());
-                        }
+                    public void onNext(List<ArticlesItem> articlesItems) {
+                        Log.e("On Next", articlesItems.size() + "");
+                        mAdapter.addData(articlesItems);
                     }
 
                     @Override
                     public void onError(Throwable e) {
                         Log.e("onError", e.getLocalizedMessage());
+
                     }
 
                     @Override
@@ -95,39 +154,6 @@ public class MainActivity extends AppCompatActivity
 
                     }
                 });
-        mViewModel.getNews("associated-press")
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(io.reactivex.schedulers.Schedulers.io())
-                .subscribe(new Observer<NewsResponse>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-
-                        Log.e("OnSub", "Subcribed");
-                    }
-
-                    @Override
-                    public void onNext(NewsResponse newsResponse) {
-                        Log.e("onNext the next", new Gson().toJson(newsResponse));
-                        Log.e("onNext the next", newsResponse.getArticles().size() + "");
-
-                        if (mAdapter != null) {
-                            mAdapter.addData(newsResponse.getArticles());
-                        }
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e("onError", e.getLocalizedMessage());
-                    }
-
-                    @Override
-                    public void onComplete() {
-
-                    }
-                });
-
-
     }
 
     @Override

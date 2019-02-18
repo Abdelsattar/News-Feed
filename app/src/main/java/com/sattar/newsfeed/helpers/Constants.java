@@ -5,4 +5,7 @@ package com.sattar.newsfeed.helpers;
  */
 public class Constants {
 
+
+    public static String KEY_THE_NEXT_WEB = "the-next-web";
+    public static String KEY_ASSOCIATED_PRESS= "associated-press";
 }
