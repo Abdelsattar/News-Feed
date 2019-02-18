@@ -2,6 +2,7 @@ package com.sattar.newsfeed.ViewModels;
 
 import android.arch.lifecycle.ViewModel;
 
+import com.sattar.newsfeed.models.ArticlesItemRealm;
 import com.sattar.newsfeed.models.news.ArticlesItem;
 import com.sattar.newsfeed.models.news.NewsResponse;
 import com.sattar.newsfeed.repositories.NewsRepository;
@@ -11,6 +12,7 @@ import java.util.List;
 
 import io.reactivex.Observable;
 import io.reactivex.functions.BiFunction;
+import io.realm.RealmList;
 
 import static com.sattar.newsfeed.helpers.Constants.KEY_ASSOCIATED_PRESS;
 import static com.sattar.newsfeed.helpers.Constants.KEY_THE_NEXT_WEB;
@@ -40,8 +42,23 @@ public class MainActivityViewModel extends ViewModel {
                                     allArticles.addAll(source1.getArticles());
                                 if (source2 != null && !source2.getArticles().isEmpty())
                                     allArticles.addAll(source2.getArticles());
-                                return allArticles;
+
+                                newsRepository.addArticlesToRealm(allArticles);
+
+                                return getAllArticles();
                             }
                         });
+    }
+
+    public List<ArticlesItem> getAllArticles() {
+        RealmList<ArticlesItemRealm> realmList = newsRepository.getAllArticlesOffline();
+        List<ArticlesItem> articlesList = new ArrayList<>();
+        for (ArticlesItemRealm itemRealm : realmList) {
+            ArticlesItem articlesItem = new ArticlesItem();
+            articlesItem.copyFromRealm(itemRealm);
+            articlesList.add(articlesItem);
+        }
+
+        return articlesList;
     }
 }

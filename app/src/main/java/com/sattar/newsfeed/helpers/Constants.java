@@ -9,5 +9,5 @@ public class Constants {
     public static String KEY_THE_NEXT_WEB = "the-next-web";
     public static String KEY_ASSOCIATED_PRESS= "associated-press";
 
-    public static String KEY_ARTICLE= "article";
+    public static String KEY_ARTICLE_TITLE= "article_title";
 }

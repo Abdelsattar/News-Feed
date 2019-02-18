@@ -33,7 +33,7 @@ import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 
-import static com.sattar.newsfeed.helpers.Constants.KEY_ARTICLE;
+import static com.sattar.newsfeed.helpers.Constants.KEY_ARTICLE_TITLE;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     void initScreen() {
+
         mViewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
         rvNews = findViewById(R.id.rvNews);
         txtError = findViewById(R.id.txtError);
@@ -86,9 +87,9 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+
     void getAllNews() {
 //        progressBar.setVisibility(View.VISIBLE);
-
         mViewModel.getAllNews()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(io.reactivex.schedulers.Schedulers.io())
@@ -101,26 +102,15 @@ public class MainActivity extends AppCompatActivity
 
                     @Override
                     public void onNext(List<ArticlesItem> articlesItems) {
-                        Log.e("On Next", articlesItems.size() + "");
-                        progressBar.setVisibility(View.GONE);
+
                         mArticlesItemList = articlesItems;
-
-                        if (!articlesItems.isEmpty()) {
-                            mAdapter.updateData(articlesItems);
-                            rvNews.setVisibility(View.VISIBLE);
-                            txtError.setVisibility(View.GONE);
-
-                        } else {
-                            txtError.setText(getString(R.string.txt_no_articles));
-                            txtError.setVisibility(View.VISIBLE);
-                        }
+                        bindDataToScreen(mArticlesItemList, false);
                     }
 
                     @Override
                     public void onError(Throwable e) {
-                        Log.e("onError", e.getLocalizedMessage());
-                        progressBar.setVisibility(View.GONE);
-                        txtError.setVisibility(View.VISIBLE);
+                        mArticlesItemList = mViewModel.getAllArticles();
+                        bindDataToScreen(mArticlesItemList, true);
 
                     }
 
@@ -129,6 +119,26 @@ public class MainActivity extends AppCompatActivity
 
                     }
                 });
+    }
+
+    void bindDataToScreen(List<ArticlesItem> mArticlesItemList, Boolean isError) {
+        progressBar.setVisibility(View.GONE);
+
+        if (mArticlesItemList == null || mArticlesItemList.isEmpty()) {
+            if (isError) {
+                txtError.setText(getString(R.string.txt_error));
+                txtError.setVisibility(View.VISIBLE);
+            } else {
+                txtError.setText(getString(R.string.txt_no_articles));
+                txtError.setVisibility(View.VISIBLE);
+            }
+
+        } else {
+            mAdapter.updateData(mArticlesItemList);
+            rvNews.setVisibility(View.VISIBLE);
+            txtError.setVisibility(View.GONE);
+
+        }
     }
 
     @Override
@@ -194,7 +204,7 @@ public class MainActivity extends AppCompatActivity
             public void onItemClicked(int pos) {
 
                 startActivity(new Intent(MainActivity.this, NewsDetailsActivity.class)
-                        .putExtra(KEY_ARTICLE, mArticlesItemList.get(pos)));
+                        .putExtra(KEY_ARTICLE_TITLE, mArticlesItemList.get(pos).getTitle()));
             }
         });
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);

@@ -1,5 +1,6 @@
 package com.sattar.newsfeed.views;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
@@ -13,21 +14,25 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.sattar.newsfeed.R;
+import com.sattar.newsfeed.ViewModels.NewsDetailsViewModel;
 import com.sattar.newsfeed.helpers.Utilities;
-import com.sattar.newsfeed.models.news.ArticlesItem;
+import com.sattar.newsfeed.models.ArticlesItemRealm;
 import com.squareup.picasso.Picasso;
 
-import static com.sattar.newsfeed.helpers.Constants.KEY_ARTICLE;
+import static com.sattar.newsfeed.helpers.Constants.KEY_ARTICLE_TITLE;
 
 public class NewsDetailsActivity extends AppCompatActivity {
 
-    ArticlesItem article;
+    ArticlesItemRealm article;
     ImageView imgArticle;
     public TextView txtTitle;
     TextView txtSource;
     TextView txtDate;
     TextView txtDescription;
     Button btnOpenWebsite;
+    String articleTitle;
+
+    NewsDetailsViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,11 +49,14 @@ public class NewsDetailsActivity extends AppCompatActivity {
         txtDate = findViewById(R.id.txtDate);
         txtDescription = findViewById(R.id.txtDescription);
         btnOpenWebsite = findViewById(R.id.btnOpenWebsite);
+        viewModel = ViewModelProviders.of(this).get(NewsDetailsViewModel.class);
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
-        article = getIntent().getParcelableExtra(KEY_ARTICLE);
+        articleTitle = getIntent().getStringExtra(KEY_ARTICLE_TITLE);
+        if (articleTitle != null)
+            article = viewModel.getArticle(articleTitle);
 
         if (article != null) {
             bindDataToScreen(article);
@@ -60,14 +68,14 @@ public class NewsDetailsActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                    onBackPressed();
+                onBackPressed();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-    void bindDataToScreen(final ArticlesItem article) {
+    void bindDataToScreen(ArticlesItemRealm article) {
         txtDate.setText(Utilities.getDateTime(article.getPublishedAt()));
         txtTitle.setText(article.getTitle());
         txtSource.setText(article.getAuthor());
@@ -86,10 +94,11 @@ public class NewsDetailsActivity extends AppCompatActivity {
                     .into(imgArticle);
         }
 
+        final String websiteUrl = article.getUrl();
         btnOpenWebsite.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                openWebsite(article.getUrl());
+                openWebsite(websiteUrl);
             }
         });
     }

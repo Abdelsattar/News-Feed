@@ -4,6 +4,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.google.gson.annotations.SerializedName;
+import com.sattar.newsfeed.models.ArticlesItemRealm;
+
 
 public class ArticlesItem implements Parcelable {
 
@@ -24,6 +26,10 @@ public class ArticlesItem implements Parcelable {
 
     @SerializedName("url")
     private String url;
+
+
+    public ArticlesItem() {
+    }
 
     protected ArticlesItem(Parcel in) {
         publishedAt = in.readString();
@@ -120,5 +126,22 @@ public class ArticlesItem implements Parcelable {
         parcel.writeString(description);
         parcel.writeString(title);
         parcel.writeString(url);
+    }
+
+    public void copyToRealm(ArticlesItemRealm itemRealm) {
+        itemRealm.setAuthor(getAuthor());
+        itemRealm.setDescription(getDescription());
+        itemRealm.setPublishedAt(getPublishedAt());
+        itemRealm.setUrl(getUrl());
+        itemRealm.setUrlToImage(getUrlToImage());
+    }
+
+    public void copyFromRealm(ArticlesItemRealm itemRealm) {
+        setTitle(itemRealm.getTitle());
+        setAuthor(itemRealm.getAuthor());
+        setDescription(itemRealm.getDescription());
+        setPublishedAt(itemRealm.getPublishedAt());
+        setUrl(itemRealm.getUrl());
+        setUrlToImage(itemRealm.getUrlToImage());
     }
 }
